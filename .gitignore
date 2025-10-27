@@ -1,0 +1,9 @@
+.env
+node_modules/
+dist/
+.turbo/
+.next/
+proxy
+.env
+__pycache__/
+**/.DS_Store

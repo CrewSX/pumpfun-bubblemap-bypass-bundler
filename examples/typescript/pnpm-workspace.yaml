@@ -1,0 +1,11 @@
+packages:
+  - "facilitator"
+  - "servers/*"
+  - "clients/*"
+  - "fullstack/*"
+  - "dynamic_agent"
+  - "agent"
+  - "mcp-embedded-wallet"
+  - "mpc"
+  - "discovery"
+  - "../../typescript/packages/*"
