@@ -34,7 +34,7 @@ The bsc-x402 ecosystem is growing! Check out our [ecosystem page](https://x402.o
 
 Want to add your project to the ecosystem? See our [demo site README](https://github.com/BSC-x402Protocol/x402/tree/main/typescript/site#adding-your-project-to-the-ecosystem) for detailed instructions on how to submit your project.
 
-**Roadmap:** see [ROADMAP.md](https://github.com/coinbase/x402/blob/main/ROADMAP.md)
+**Roadmap:** see [ROADMAP.md](https://github.com/BSC-x402Protocol/x402/blob/main/ROADMAP.md)
 
 ## Terms:
 
@@ -241,7 +241,7 @@ A `facilitator server` is a 3rd party service that can be used by a `resource se
 
 A scheme is a logical way of moving money.
 
-Blockchains allow for a large number of flexible ways to move money. To help facilitate an expanding number of payment use cases, the `x402` protocol is extensible to different ways of settling payments via its `scheme` field.
+Blockchains allow for a large number of flexible ways to move money. To help facilitate an expanding number of payment use cases, the `BSC-x402` protocol is extensible to different ways of settling payments via its `scheme` field.
 
 Each payment scheme may have different operational functionality depending on what actions are necessary to fulfill the payment.
 For example `exact`, the first scheme shipping as part of the protocol, would have different behavior than `upto`. `exact` transfers a specific amount (ex: pay $1 to read an article), while a theoretical `upto` would transfer up to an amount, based on the resources consumed during a request (ex: generating tokens from an LLM).
@@ -272,4 +272,4 @@ You should see activities in the client terminal, which will display a weather r
 2. Install dependencies: `pnpm install`
 3. Run the unit tests: `pnpm test`
 
-This will run the unit tests for the x402 packages.
+This will run the unit tests for the BSC-x402 packages.
