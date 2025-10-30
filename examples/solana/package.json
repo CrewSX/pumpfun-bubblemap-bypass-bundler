@@ -1,0 +1,21 @@
+{
+  "name": "x402-solana-example",
+  "version": "1.0.0",
+  "description": "Minimal x402 payment protocol example on Solana",
+  "type": "module",
+  "scripts": {
+    "setup": "node setup.js",
+    "server": "node server.js",
+    "client": "node client.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.8",
+    "@solana/spl-token": "^0.4.9",
+    "express": "^4.21.2",
+    "dotenv": "^16.4.7"
+  },
+  "keywords": ["x402", "solana", "payments", "micropayments"],
+  "author": "",
+  "license": "MIT"
+}
+
