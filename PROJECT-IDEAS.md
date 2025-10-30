@@ -113,6 +113,39 @@ Impact-based micro‑grants up to **\$3k** are available for projects that unloc
 
 ---
 
+---
+
+## Solana-Native DePIN Projects
+
+### IoT Sensor Data Marketplace
+
+* **What it does:** DePIN devices sell sensor data per reading via x402.
+* **Payment moment:** Per data point ($0.0001-0.001 per reading).
+* **Why Solana:** Only chain where sub-cent transactions are economically viable.
+* **Example:** Weather stations, air quality monitors, traffic cameras.
+
+### Decentralized CDN Pay-Per-Byte
+
+* **What it does:** Content delivery charged per KB served.
+* **Payment moment:** Streaming micropayments as data flows.
+* **Why Solana:** $0.00001 per KB is only possible with ultra-low fees.
+
+---
+
+## Resources
+
+### Solana x402 Ecosystem
+- [Corbits](https://corbits.dev/) - Solana-first x402 SDK
+- [MCPay.tech](https://mcpay.tech/) - MCP server monetization
+- [PayAI Network](https://payai.network/) - x402 facilitator
+- [x420scan](https://x420scan.com/) - Ecosystem explorer
+- [Official Guide](https://solana.com/developers/guides/getstarted/intro-to-x402)
+
+### Example Implementation
+See `/examples/solana/` for a complete working example with server and client.
+
+---
+
 ## Need Something Else?
 
-Have an idea that doesn’t fit? **We’re flexible.** Pitch it in an issue, outline the APIs you’ll wrap, and we’ll help you scope it.
+Have an idea that doesn't fit? **We're flexible.** Pitch it in an issue, outline the APIs you'll wrap, and we'll help you scope it.

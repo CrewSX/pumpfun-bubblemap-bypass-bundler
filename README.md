@@ -1,17 +1,90 @@
-#  BSC-x402 payments protocol
+#  x402 - Internet-Native Payments Protocol with AI Agent
 
-BSC-x402 payments protocol on internet are fundamentally flawed. Credit Cards are high friction, hard to accept, have minimum payments that are far too high, and don't fit into the programmatic nature of the internet.
+The x402 protocol enables instant, programmable micropayments on the internet. Credit Cards are high friction, hard to accept, have minimum payments that are far too high, and don't fit into the programmatic nature of the internet.
+
 It's time for an open, internet-native form of payments. A payment rail that doesn't have high minimums + % based fee. Payments that are amazing for humans and AI agents.
 
-> "1 line of code to accept digital dollars. No fee, 2 second settlement, $0.001 minimum payment."
+> "1 line of code to accept digital dollars. Near-zero fees, instant settlement, $0.001 minimum payment."
+
+## Multi-Chain Support
+
+This protocol supports multiple blockchain networks:
+- **EVM Chains**: Ethereum, Base, BSC, and other EVM-compatible networks
+- **Solana**: Low-cost, high-speed payments with SPL tokens (USDC, SOL, etc.)
+
+### Quick Start - EVM
 
 ```typescript
 app.use(
   // How much you want to charge, and where you want the funds to land
   paymentMiddleware("0xYourAddress", { "/your-endpoint": "$0.01" })
 );
-// That's it! See examples/typescript/servers/express.ts for a complete example. Instruction below for running on base-sepolia.
+// That's it! See examples/typescript/servers/express.ts for a complete example.
 ```
+
+### Quick Start - Solana
+
+```typescript
+// Minimal Solana x402 server - see examples/solana for complete implementation
+app.get('/premium', async (req, res) => {
+  const payment = req.headers['x-payment'];
+  if (payment) {
+    // Verify transaction on Solana
+    const verified = await verifyPayment(payment);
+    if (verified) return res.json({ data: 'Premium content!' });
+  }
+  // Return 402 with payment requirements
+  return res.status(402).json({
+    payment: {
+      recipientWallet: WALLET.toBase58(),
+      mint: USDC_MINT.toBase58(),
+      amount: 1000000, // 1 USDC
+      cluster: 'devnet'
+    }
+  });
+});
+```
+## Use Cases
+
+x402 enables a wide range of micropayment and pay-per-use scenarios:
+
+### AI & Agent Commerce
+- **AI Agent API Access**: Pay per LLM inference, image generation, or AI model API call
+- **MCP Server Monetization**: Charge for Model Context Protocol tools and data sources
+- **Agent-to-Agent Payments**: Enable autonomous agents to transact for services and data
+- **Premium AI Training Data**: Sell access to curated datasets on a per-query basis
+
+### Content & Media
+- **Paywalled Articles**: Micro-amounts per article instead of full subscriptions
+- **Video/Audio Streaming**: Pay per view or per minute
+- **High-Resolution Images**: Unlock full-resolution downloads after payment
+- **Premium Newsletter Access**: Monetize individual newsletter issues
+
+### Developer Services
+- **API Metering**: Pay per RPC call, database query, or compute unit
+- **Serverless Functions**: Charge for individual function executions
+- **Real-Time Market Data**: Per-quote or per-tick pricing feeds
+
+### Gaming & Virtual Goods
+- **Game Server Access**: Pay per session or per hour
+- **Mod/Asset Downloads**: Monetize user-generated content
+- **Tournament Entry Fees**: Automated prize pool distribution
+
+The key advantage on Solana: **fractions of a cent per transaction** enabling true micropayments, plus **instant settlement** for real-time access control.
+
+## Ecosystem & SDKs
+
+### Solana Ecosystem
+- **[Corbits](https://corbits.dev/)** - Solana-first SDK for x402 flows
+- **[MCPay.tech](https://mcpay.tech/)** - Pay for MCP servers in micropayments
+- **[PayAI Facilitator](https://payai.network/)** - x402 facilitator with Solana support
+- **[x420scan](https://x420scan.com/)** - x402 ecosystem explorer
+- **[Coinbase x402](https://github.com/coinbase/x402)** - Reference implementation (Solana support in progress)
+
+### Resources
+- **[Solana x402 Guide](https://solana.com/developers/guides/getstarted/intro-to-x402)** - Official Solana developer guide
+- **[x402 Spec](./specs/)** - Full protocol specification
+
 ## Contact
 
 If you have any question, contact here: [Telegram](https://t.me/shiny0103) | [Twitter](https://x.com/0xTan1319)
@@ -197,9 +270,11 @@ Because a scheme is a logical way of moving money, the way a scheme is implement
 
 Clients and facilitators must explicitly support different `(scheme, network)` pairs in order to be able to create proper payloads and verify / settle payments.
 
-## Running example
+## Running Examples
 
 **Requirements:** Node.js v24 or higher
+
+### EVM Examples (TypeScript)
 
 1. From `examples/typescript` run `pnpm install` and `pnpm build` to ensure all dependent packages and examples are setup.
 
@@ -208,6 +283,19 @@ Clients and facilitators must explicitly support different `(scheme, network)` p
 3. Select a client, i.e. axios, and `cd` into that example. Add your private key for the account making payments into the `.env` file, and then run `pnpm dev` in that directory.
 
 You should see activities in the client terminal, which will display a weather report.
+
+### Solana Examples
+
+1. Navigate to `examples/solana/`
+2. Install dependencies: `npm install`
+3. Setup wallets:
+   - Create `server-wallet.json` for the server (recipient)
+   - Create `client-wallet.json` for the client (payer)
+   - Fund client wallet with SOL and USDC on devnet
+4. Run server: `npm run server`
+5. In another terminal, run client: `npm run client`
+
+The client will pay the server in USDC to access premium content. Transaction details will be displayed with Solana Explorer links.
 
 ## Running tests
 
