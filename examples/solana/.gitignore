@@ -1,0 +1,8 @@
+node_modules/
+.env
+server-wallet.json
+client-wallet.json
+*.json
+!package.json
+!package-lock.json
+
