@@ -87,7 +87,7 @@ The key advantage on Solana: **fractions of a cent per transaction** enabling tr
 
 ## Contact
 
-If you have any question, contact here: [Telegram](https://t.me/shiny0103) | [Twitter](https://x.com/0xTan1319)
+If you have any question, contact here: [Telegram](https://t.me/shiny0103) | [Twitter](https://x.com/0xTan333)
 
 ## Technical Goals:
 
