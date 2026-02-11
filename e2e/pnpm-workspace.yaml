@@ -1,4 +1,0 @@
-packages:
-  - "servers/*"
-  - "clients/*"
-  - "../typescript/packages/*"
