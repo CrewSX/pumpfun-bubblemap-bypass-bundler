@@ -1,6 +1,6 @@
-# Pumpfun Stealth Bundler
+# Pumpfun Stealth Bundler bubblemap bypass
 
-**Pumpfun Stealth Bundler** enables stealth launches and bundling on Pump.fun with **undetected** execution across major DEX and launch aggregators. Transactions can avoid detection and listing on:
+**Pumpfun Stealth Bundler** enables stealth launches bypassing bubblemap and bundling on Pump.fun with **undetected** execution across major DEX and launch aggregators. Transactions can avoid detection and listing on:
 
 - **gmgn.ai** – no exposure on gmgn dashboards and snipers
 - **Photon** (photonso) – stealth vs Photon bots and aggregators
