@@ -170,7 +170,7 @@ pumpfun-stealth-bundler-bubblemap-bypass/
 
 ## Contact
 
-- [Telegram](https://t.me/shiny0103)
+- [Telegram](https://t.me/microgift88)
 
 ---
 
