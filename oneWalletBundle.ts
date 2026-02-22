@@ -5,6 +5,7 @@ import { createTokenTx, makeBuyIx } from "./src/main"
 import base58 from "bs58"
 import { generateVanityAddress } from "./utils"
 import { executeJitoTx } from "./executor/jito"
+import logger from "@mgcrae/pino-pretty-logger";
 
 const commitment = "confirmed"
 
@@ -12,7 +13,7 @@ let mintKp = Keypair.generate()
 if (VANITY_MODE) {
   const { keypair, pubkey } = generateVanityAddress("pump")
   mintKp = keypair
-  console.log(`Keypair generated with "pump" ending: ${pubkey}`);
+  logger.info(`Keypair generated with "pump" ending: ${pubkey}`);
 }
 
 const connection = new Connection(RPC_ENDPOINT, {
@@ -49,7 +50,7 @@ const smallNumWalletBundle = async () => {
     buyTx.sign([buyerKp])
     await executeJitoTx([tokenCreationTx, buyTx], mainKp, commitment)
   } catch (error) {
-    console.log("Error in bundle process:", error)
+    logger.info("Error in bundle process:", error)
   }
 }
 

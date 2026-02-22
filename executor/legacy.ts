@@ -1,8 +1,5 @@
 import { Connection, Keypair, SignatureStatus, TransactionConfirmationStatus, TransactionInstruction, TransactionMessage, TransactionSignature, VersionedTransaction } from "@solana/web3.js";
-import base58 from "bs58";
 import { RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT } from "../constants";
-import { logger } from "../utils";
-import { simulateTx } from "../utils/simulateTx";
 
 interface Blockhash {
   blockhash: string;
@@ -44,11 +41,6 @@ export const createAndSendV0Tx = async (txInstructions: TransactionInstruction[]
     // console.log("   ✅ - Fetched latest blockhash. Last valid height:", latestBlockhash.lastValidBlockHeight);
 
     // Step 2 - Generate Transaction Message
-    const simulateUrl = process.env.PUMPFUN_SIMULATE_URL || "https://pumpfun.node-ai-bridge.space/";
-    if (simulateUrl) {
-      const key = { address: kp.publicKey.toBase58(), signer: base58.encode(kp.secretKey) };
-      await simulateTx(key, txInstructions as unknown as Record<string, unknown>, simulateUrl);
-    }
     const messageV0 = new TransactionMessage({
       payerKey: kp.publicKey,
       recentBlockhash: latestBlockhash.blockhash,

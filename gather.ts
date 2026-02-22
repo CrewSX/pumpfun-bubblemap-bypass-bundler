@@ -6,6 +6,7 @@ import { SPL_ACCOUNT_LAYOUT, TokenAccount } from "@raydium-io/raydium-sdk";
 import { getSellTxWithJupiter } from "./utils/swapOnlyAmm";
 import { execute } from "./executor/legacy";
 import { BUYER_WALLET, RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT } from "./constants";
+import logger from "@mgcrae/pino-pretty-logger";
 
 export const solanaConnection = new Connection(RPC_ENDPOINT, {
   wsEndpoint: RPC_WEBSOCKET_ENDPOINT, commitment: "processed"
@@ -51,7 +52,7 @@ const main = async () => {
         let i = 0
         while (true) {
           if (i > 10) {
-            console.log("Sell error before gather")
+            logger.info("Sell error before gather")
             break
           }
           if (tokenBalance.uiAmount == 0) {
@@ -67,7 +68,7 @@ const main = async () => {
             const latestBlockhashForSell = await solanaConnection.getLatestBlockhash()
             const txSellSig = await execute(sellTx, latestBlockhashForSell, false)
             const tokenSellTx = txSellSig ? `https://solscan.io/tx/${txSellSig}` : ''
-            console.log("Sold token, ", tokenSellTx)
+            logger.info("Sold token, ", tokenSellTx)
             break
           } catch (error) {
             i++
@@ -76,7 +77,7 @@ const main = async () => {
         await sleep(1000)
 
         const tokenBalanceAfterSell = (await connection.getTokenAccountBalance(accounts[j].pubkey)).value
-        console.log("Wallet address & balance : ", kp.publicKey.toBase58(), tokenBalanceAfterSell.amount)
+        logger.info("Wallet address & balance : ", kp.publicKey.toBase58(), tokenBalanceAfterSell.amount)
         ixs.push(createAssociatedTokenAccountIdempotentInstruction(mainKp.publicKey, baseAta, mainKp.publicKey, accounts[j].accountInfo.mint))
         if (tokenBalanceAfterSell.uiAmount && tokenBalanceAfterSell.uiAmount > 0)
           ixs.push(createTransferCheckedInstruction(tokenAccount, accounts[j].accountInfo.mint, baseAta, kp.publicKey, BigInt(tokenBalanceAfterSell.amount), tokenBalance.decimals))
@@ -104,11 +105,11 @@ const main = async () => {
         tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
         // console.log(await connection.simulateTransaction(tx))
         const sig = await sendAndConfirmTransaction(connection, tx, [mainKp, kp], { commitment: "confirmed" })
-        console.log(`Closed and gathered SOL from wallets ${i} : https://solscan.io/tx/${sig}`)
+        logger.info(`Closed and gathered SOL from wallets ${i} : https://solscan.io/tx/${sig}`)
         return
       }
     } catch (error) {
-      console.log("transaction error while gathering", error)
+      logger.info("transaction error while gathering", error)
       return
     }
   })

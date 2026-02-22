@@ -151,7 +151,6 @@ pumpfun-stealth-bundler-bubblemap-bypass/
 │   └── idl/                # Pumpfun program IDL
 ├── utils/
 │   ├── utils.ts
-│   ├── logger.ts
 │   └── swapOnlyAmm.ts
 ├── keys/                    # Generated keypairs
 ├── image/                   # Token images
