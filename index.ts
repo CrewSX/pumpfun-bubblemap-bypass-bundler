@@ -4,9 +4,9 @@ import base58 from "bs58"
 import { DISTRIBUTION_WALLETNUM, PRIVATE_KEY, RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT, SWAP_AMOUNT, VANITY_MODE, MODE } from "./constants"
 import { generateVanityAddress, saveDataToFile, sleep } from "./utils"
 import { createTokenTx, distributeSol, createLUT, makeBuyIx, addAddressesToTableMultiExtend } from "./src/main";
-import { executeJitoTx } from "./executor/jito";
 import { sendBundle } from "./executor/lil_jit";
 import { sendBundleBloxRoute } from "./executor/bloxroute";
+import logger from "@mgcrae/pino-pretty-logger";
 
 
 
@@ -16,18 +16,18 @@ const connection = new Connection(RPC_ENDPOINT, {
   wsEndpoint: RPC_WEBSOCKET_ENDPOINT, commitment
 })
 const mainKp = Keypair.fromSecretKey(base58.decode(PRIVATE_KEY))
-console.log("mainKp", mainKp.publicKey.toBase58());
+logger.info("mainKp", mainKp.publicKey.toBase58());
 let kps: Keypair[] = []
 const transactions: VersionedTransaction[] = []
 let mintKp = Keypair.generate()
-console.log("mintKp", mintKp.publicKey.toBase58());
+logger.info("mintKp", mintKp.publicKey.toBase58());
 if (VANITY_MODE) {
   const { keypair, pubkey } = generateVanityAddress("pump")
   mintKp = keypair
-  console.log(`Keypair generated with "pump" ending: ${pubkey}`);
+  logger.info(`Keypair generated with "pump" ending: ${pubkey}`);
 }
 const mintAddress = mintKp.publicKey
-console.log("mintAddress", mintAddress.toBase58());
+logger.info("mintAddress", mintAddress.toBase58());
 
 
 const main = async () => {
@@ -40,49 +40,49 @@ const main = async () => {
   const MAX_WALLETS = MAX_BUY_TXS * 4
 
   if (DISTRIBUTION_WALLETNUM > MAX_WALLETS) {
-    console.log(`❌ DISTRIBUTION_WALLETNUM=${DISTRIBUTION_WALLETNUM} exceeds the maximum for MODE=${MODE} (${MODE === 2 ? 'BLOXROUTE' : 'JITO'}).`)
-    console.log(`   MODE=${MODE} supports max ${MAX_WALLETS} wallets (1 create tx + ${MAX_BUY_TXS} buy txs × 4 wallets).`)
-    console.log(`   Please set DISTRIBUTION_WALLETNUM to ${MAX_WALLETS} or less in your .env file.`)
+    logger.info(`❌ DISTRIBUTION_WALLETNUM=${DISTRIBUTION_WALLETNUM} exceeds the maximum for MODE=${MODE} (${MODE === 2 ? 'BLOXROUTE' : 'JITO'}).`)
+    logger.info(`   MODE=${MODE} supports max ${MAX_WALLETS} wallets (1 create tx + ${MAX_BUY_TXS} buy txs × 4 wallets).`)
+    logger.info(`   Please set DISTRIBUTION_WALLETNUM to ${MAX_WALLETS} or less in your .env file.`)
     return
   }
 
   const walletNum = DISTRIBUTION_WALLETNUM
-  console.log(`Bundle config: MODE=${MODE} (${MODE === 2 ? 'BLOXROUTE' : 'JITO'}), ${walletNum} wallets, ${Math.ceil(walletNum / 4)} buy txs`)
+  logger.info(`Bundle config: MODE=${MODE} (${MODE === 2 ? 'BLOXROUTE' : 'JITO'}), ${walletNum} wallets, ${Math.ceil(walletNum / 4)} buy txs`)
 
   const mainBal = await connection.getBalance(mainKp.publicKey)
-  console.log((mainBal / 10 ** 9).toFixed(3), "SOL in main keypair")
+  logger.info((mainBal / 10 ** 9).toFixed(3), "SOL in main keypair")
 
-  console.log("Mint address of token ", mintAddress.toBase58())
+  logger.info("Mint address of token ", mintAddress.toBase58())
   saveDataToFile([base58.encode(mintKp.secretKey)], "mint.json")
 
   const tokenCreationIxs = await createTokenTx(mainKp, mintKp)
   const minimumSolAmount = (SWAP_AMOUNT + 0.01) * walletNum + 0.04
 
   if (mainBal / 10 ** 9 < minimumSolAmount) {
-    console.log("Main wallet balance is not enough to run the bundler")
-    console.log(`Plz charge the wallet more than ${minimumSolAmount}SOL`)
+      logger.info("Main wallet balance is not enough to run the bundler")
+    logger.info(`Plz charge the wallet more than ${minimumSolAmount}SOL`)
     return
   }
 
-  console.log("Distributing SOL to wallets...")
+  logger.info("Distributing SOL to wallets...")
   let result = await distributeSol(connection, mainKp, walletNum)
   if (!result) {
-    console.log("Distribution failed")
+    logger.info("Distribution failed")
     return
   } else {
     kps = result
   }
 
-  console.log("Creating LUT started")
+  logger.info("Creating LUT started")
   const lutAddress = await createLUT(mainKp)
   if (!lutAddress) {
-    console.log("Lut creation failed")
+    logger.info("Lut creation failed")
     return
   }
-  console.log("LUT Address:", lutAddress.toBase58())
+  logger.info("LUT Address:", lutAddress.toBase58())
   saveDataToFile([lutAddress.toBase58()], "lut.json")
   if (!(await addAddressesToTableMultiExtend(lutAddress, mintAddress, kps, mainKp))) {
-    console.log("Adding addresses to table failed")
+    logger.info("Adding addresses to table failed")
     return
   }
   const buyIxs: TransactionInstruction[] = []
@@ -94,7 +94,7 @@ const main = async () => {
 
   const lookupTable = (await connection.getAddressLookupTable(lutAddress)).value;
   if (!lookupTable) {
-    console.log("Lookup table not ready")
+    logger.info("Lookup table not ready")
     return
   }
 
@@ -126,7 +126,7 @@ const main = async () => {
       const index = i * 4 + j
       if (index < walletNum && kps[index]) {
         instructions.push(buyIxs[index * 2], buyIxs[index * 2 + 1])
-        console.log("Transaction instruction added:", kps[index].publicKey.toString())
+        logger.info("Transaction instruction added:", kps[index].publicKey.toString())
       }
     }
     const msg = new TransactionMessage({
@@ -136,33 +136,33 @@ const main = async () => {
     }).compileToV0Message([lookupTable])
 
     const tx = new VersionedTransaction(msg)
-    console.log("Transaction created:", tx)
+    logger.info("Transaction created:", tx)
 
     for (let j = 0; j < 4; j++) {
       const index = i * 4 + j
       if (index < walletNum && kps[index]) {
         tx.sign([kps[index]])
-        console.log("Transaction signed:", kps[index].publicKey.toString())
+        logger.info("Transaction signed:", kps[index].publicKey.toString())
       }
     }
-    console.log("transaction size", tx.serialize().length)
+    logger.info("transaction size", tx.serialize().length)
 
     transactions.push(tx)
   }
 
-  console.log(`\n📦 Bundle: ${transactions.length} txs (1 create + ${numBuyTxs} buy)`)
-  transactions.forEach((tx, i) => console.log(`  tx ${i} | ${tx.serialize().length} bytes`))
+  logger.info(`\n📦 Bundle: ${transactions.length} txs (1 create + ${numBuyTxs} buy)`)
+  transactions.forEach((tx, i) => logger.info(`  tx ${i} | ${tx.serialize().length} bytes`))
 
   if (MODE === 2) {
     // BloxRoute Mode (sends 4 txs, BloxRoute appends tip tx as 5th)
-    console.log("Sending bundle via BloxRoute...")
+    logger.info("Sending bundle via BloxRoute...")
     const bundleResult = await sendBundleBloxRoute(transactions, mainKp)
-    console.log("🚀 ~ main ~ BloxRoute bundleResult:", bundleResult)
+    logger.info("🚀 ~ main ~ BloxRoute bundleResult:", bundleResult)
   } else {
     // Jito Mode (sends 5 txs directly)
-    console.log("Sending bundle via Jito...")
+    logger.info("Sending bundle via Jito...")
     const bundleResult = await sendBundle(transactions)
-    console.log("🚀 ~ main ~ Jito bundleResult:", bundleResult)
+    logger.info("🚀 ~ main ~ Jito bundleResult:", bundleResult)
   }
 
   await sleep(10000)

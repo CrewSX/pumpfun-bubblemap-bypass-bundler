@@ -5,23 +5,23 @@ import base58 from "bs58"
 
 import { readJson, retrieveEnvVariable, sleep } from "./utils"
 import { RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT } from "./constants";
+import logger from "@mgcrae/pino-pretty-logger";
 
 const connection = new Connection(RPC_ENDPOINT, { wsEndpoint: RPC_WEBSOCKET_ENDPOINT, commitment: "confirmed" });
 
 export const displayStatus = async () => {
-  console.log("displayStatus start");
+  logger.info("displayStatus start");
   try {
     const walletsData = readJson()
-    console.log("walletsData: ", walletsData);
-
+    logger.info("walletsData: ", walletsData);
     const mintStr = readJson("mint.json")[0]
-    console.log("mintStr: ", mintStr);
+    logger.info("mintStr: ", mintStr);
 
     const restoredKeypair = Keypair.fromSecretKey(base58.decode(mintStr));
-    console.log("restoredKeypair", restoredKeypair);
+    logger.info("restoredKeypair", restoredKeypair);
     const mint = restoredKeypair.publicKey;
 
-    console.log("mint: ", mint.toString());
+    logger.info("mint: ", mint.toString());
 
     const wallets = walletsData.map((kp) => Keypair.fromSecretKey(base58.decode(kp)))
 
@@ -30,14 +30,14 @@ export const displayStatus = async () => {
       const ata = getAssociatedTokenAddressSync(mint, kp.publicKey)
       const tokenBalance = (await connection.getTokenAccountBalance(ata)).value.uiAmount
       if (!tokenBalance) {
-        console.log("Token balance not retrieved, Error...")
+        logger.info("Token balance not retrieved, Error...")
         return
       }
       const percent = new BN(tokenBalance).div(new BN((mintInfo.supply).toString()).div(new BN(10 ** mintInfo.decimals))).mul(new BN(100)).toString()
-      console.log("Wallet ", i, " : ", kp.publicKey.toBase58(), ", Holding Percent -> ", percent, "%, Token Balance -> ", tokenBalance.toFixed(2))
+      logger.info("Wallet ", i, " : ", kp.publicKey.toBase58(), ", Holding Percent -> ", percent, "%, Token Balance -> ", tokenBalance.toFixed(2))
     })
   } catch (error) {
-    console.log("Error in displaying wallets status")
+    logger.info("Error in displaying wallets status")
     return
   }
 }

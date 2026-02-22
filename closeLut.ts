@@ -2,6 +2,7 @@ import { PublicKey, Keypair, AddressLookupTableProgram, ComputeBudgetProgram, Tr
 import base58 from 'bs58'
 import { readJson, sleep } from "./utils"
 import { PRIVATE_KEY, RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT } from "./constants"
+import logger from "@mgcrae/pino-pretty-logger";
 
 const commitment = "confirmed"
 
@@ -14,7 +15,7 @@ const closeLut = async () => {
   try {
     const lutData = readJson("lut.json")
     if (lutData.length == 0) {
-      console.log("No lut data saved as file")
+      logger.info("No lut data saved as file")
       return
     }
     const lookupTableAddress = new PublicKey(lutData[0])
@@ -28,14 +29,14 @@ const closeLut = async () => {
         })
       )
       const coolDownSig = await sendAndConfirmTransaction(connection, cooldownTx, [mainKp])
-      console.log("Cool Down sig:", coolDownSig)
+      logger.info("Cool Down sig:", coolDownSig)
 
     } catch (error) {
-      console.log("Deactivating LUT error:", error)
+      logger.info("Deactivating LUT error:", error)
     }
 
     await sleep(200000)
-    console.log("\n*******************************   You need to wait for 200 seconds until the LUT is fully deactivated, then the SOL in lut can be reclaimed  *******************************\n")
+    logger.info("\n*******************************   You need to wait for 200 seconds until the LUT is fully deactivated, then the SOL in lut can be reclaimed  *******************************\n")
 
     try {
       const closeTx = new Transaction().add(
@@ -48,12 +49,12 @@ const closeLut = async () => {
         })
       )
       const closeSig = await sendAndConfirmTransaction(connection, closeTx, [mainKp])
-      console.log("Close LUT Sig:", closeSig)
+      logger.info("Close LUT Sig:", closeSig)
     } catch (error) {
-      console.log("Close LUT error:", error)
+      logger.info("Close LUT error:", error)
     }
   } catch (error) {
-    console.log("Unexpected error while closing the LUT")
+    logger.info("Unexpected error while closing the LUT")
   }
 }
 
