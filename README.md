@@ -1,22 +1,47 @@
-# Pumpfun Stealth Bundler
+# Pumpfun Stealth Bundler — Bubblemap Bypass
 
-### Launch tokens on Pump.fun with zero Bubblemap trace. Zero bundle detection. Maximum stealth.
+**Launch Pump.fun tokens with zero Bubblemap trace and no bundle detection.** A **pumpfun stealth bundler** that makes your **pumpfun token launch** appear fully organic on Bubblemap, DexScreener, GMGN, and other analytics.
 
-The most advanced stealth bundler for Pump.fun — your token launch appears completely organic across every major analytics platform.
+[![Node 18+](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org/)
+[![License: ISC](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 
 ---
 
-## Verified Clean On
+## Table of Contents
 
-> **Bubblemap** — No connection detected
-> **Bundle Scanner** — Not flagged
+- [Overview](#overview)
+- [Verified Clean](#verified-clean)
+- [Features](#features)
+- [Bundle Modes](#bundle-modes)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+- [Disclaimer](#disclaimer)
 
-- [Axiom.trade](https://axiom.trade) — Clean
-- [Photon SOL](https://photon-sol.tinyastro.io) — Clean
-- [DexScreener](https://dexscreener.com) — Clean
-- [GMGN](https://gmgn.ai) — Clean
+---
 
-Your buyers show up as completely independent wallets — no cluster, no link, no flag.
+## Overview
+
+**Pumpfun** is a popular Solana token launch platform. This repo is a **pumpfun bundler** with **bubblemap bypass**: your token creation and buys are sent in a single atomic bundle so that on-chain analytics (including **Bubblemap**) do not link your wallets or flag the activity as a bundle.
+
+Use it for a **pumpfun token launch** that looks organic: up to 16 wallets buy in one block via Jito or bloXroute, with no cluster, no bundle link, and no scanner flags.
+
+**Keywords:** pumpfun bundler, bubblemap bypass, pumpfun stealth bundler, pumpfun token launch, pump.fun, Jito bundle, stealth launch.
+
+---
+
+## Verified Clean
+
+Your buyers show up as independent wallets — no cluster, no link, no flag.
+
+| Platform | Result |
+|----------|--------|
+| **Bubblemap** | No connection detected |
+| **Bundle scanners** | Not flagged |
+| [Axiom.trade](https://axiom.trade) | Clean |
+| [Photon SOL](https://photon-sol.tinyastro.io) | Clean |
+| [DexScreener](https://dexscreener.com) | Clean |
+| [GMGN](https://gmgn.ai) | Clean |
 
 ---
 
@@ -31,72 +56,37 @@ Live on-chain proof:
 
 ## Features
 
-- **Up to 16 Wallet Bundle** — Create your token and buy with up to 16 wallets in a single atomic bundle
-- **Dual Bundle Engine** — Switch between **Jito** and **bloXroute** with one config change for best performance
-- **Full Stealth** — Passes Bubblemap and all major bundle scanners cleanly
-- **Atomic Execution** — Token creation + all buys land in the same block, guaranteed
-- **Anti Front-Run** — Bundle transactions cannot be front-run or sandwiched
-- **Custom Token Metadata** — Set name, symbol, description, image, and all social links
-- **IPFS Upload** — Token image and metadata automatically uploaded to IPFS
-- **Address Lookup Table** — Optimized transaction size using on-chain LUT
-- **SOL Gather** — Collect all SOL back from buyer wallets in one command
-- **LUT Cleanup** — Close lookup tables and reclaim rent when done
-- **Token Status Check** — Monitor your token's bonding curve and migration status
-- **Single Wallet Mode** — Lightweight mode for single-wallet bundle launch
-- **Environment Config** — Everything controlled from a single `.env` file
+| Feature | Description |
+|--------|-------------|
+| **Up to 16-wallet bundle** | Create token and buy with up to 16 wallets in one atomic bundle |
+| **Dual engine** | **Jito** or **bloXroute** — switch with one config change |
+| **Bubblemap bypass** | Passes Bubblemap and major bundle scanners cleanly |
+| **Atomic execution** | Token creation + all buys in the same block |
+| **Anti front-run** | Bundle transactions cannot be front-run or sandwiched |
+| **Token metadata** | Name, symbol, description, image, social links |
+| **IPFS upload** | Image and metadata uploaded to IPFS automatically |
+| **Address Lookup Table** | Smaller transactions via on-chain LUT |
+| **SOL gather** | Collect SOL from buyer wallets in one command |
+| **LUT cleanup** | Close lookup tables and reclaim rent |
+| **Status check** | Monitor bonding curve and migration status |
+| **Single-wallet mode** | Lightweight single-wallet bundle launch |
+| **`.env` config** | All settings in one `.env` file |
 
 ---
 
 ## Bundle Modes
 
-Easily switch between two leading bundle engines. Set `MODE=1` or `MODE=2` in your `.env`.
+Set `MODE=1` or `MODE=2` in `.env`.
 
-> **`MODE=1` — Jito**
-> - Max **16** buyer wallets
-> - 5 transactions per bundle
-> - Direct Jito block engine submission
+**`MODE=1` — Jito**
+- Up to **16** buyer wallets
+- 5 transactions per bundle
+- Direct Jito block engine submission
 
-> **`MODE=2` — bloXroute**
-> - Max **12** buyer wallets
-> - 4 transactions per bundle (tip added automatically)
-> - bloXroute Solana trader API submission
-
----
-
-## Project Structure
-
-```
-16-Pumpfun-Bundler/
-├── index.ts                 # Main entry — bundle launch
-├── oneWalletBundle.ts       # Single wallet bundle mode
-├── gather.ts                # Gather SOL from buyer wallets
-├── closeLut.ts              # Close lookup table & reclaim rent
-├── status.ts                # Check token status
-├── constants/
-│   └── constants.ts         # Environment config & constants
-├── executor/
-│   ├── jito.ts              # Jito bundle submission
-│   ├── bloxroute.ts         # bloXroute bundle submission
-│   ├── lil_jit.ts           # Lil Jit endpoint handler
-│   └── legacy.ts            # Legacy executor
-├── src/
-│   ├── pumpfun.ts           # Pumpfun SDK — create & buy instructions
-│   ├── main.ts              # SOL distribution & wallet management
-│   ├── bondingCurveAccount.ts
-│   ├── globalAccount.ts
-│   ├── metadata.ts          # Token metadata builder
-│   ├── uploadToIpfs.ts      # IPFS upload handler
-│   ├── vanity.ts            # Vanity address generation
-│   └── idl/                 # Pumpfun program IDL (latest)
-├── utils/
-│   ├── utils.ts             # Helper utilities
-│   ├── logger.ts            # Logging
-│   └── swapOnlyAmm.ts       # Raydium AMM swap util
-├── keys/                    # Generated keypairs (auto)
-├── image/                   # Token images
-├── .env.example             # Environment template
-└── package.json
-```
+**`MODE=2` — bloXroute**
+- Up to **12** buyer wallets
+- 4 transactions per bundle (tip added automatically)
+- bloXroute Solana trader API
 
 ---
 
@@ -114,35 +104,72 @@ yarn install
 cp .env.example .env
 ```
 
-Fill in your `.env` with your private key, RPC endpoint, token details, and preferred bundle mode.
+Edit `.env`: private key, RPC, token details, and `MODE` (1 = Jito, 2 = bloXroute).
 
-### 3. Launch Bundle
+### 3. Launch
 
 ```bash
 yarn start
 ```
 
-### Available Commands
+### Commands
 
-> `yarn start` — Launch token + multi-wallet buy bundle
-> `yarn single` — Single wallet bundle launch
-> `yarn gather` — Gather SOL from all buyer wallets
-> `yarn close` — Close lookup table & reclaim rent
-> `yarn status` — Check token bonding curve status
+| Command | Description |
+|---------|-------------|
+| `yarn start` | **Pumpfun token launch** + multi-wallet buy bundle |
+| `yarn single` | Single-wallet bundle launch |
+| `yarn gather` | Gather SOL from buyer wallets |
+| `yarn close` | Close lookup table and reclaim rent |
+| `yarn status` | Check token bonding curve status |
+
+---
+
+## Project Structure
+
+```
+pumpfun-stealth-bundler-bubblemap-bypass/
+├── index.ts                 # Main entry — bundle launch
+├── oneWalletBundle.ts       # Single wallet bundle
+├── gather.ts                # Gather SOL from buyer wallets
+├── closeLut.ts              # Close LUT & reclaim rent
+├── status.ts                # Token status
+├── constants/
+│   └── constants.ts         # Env & constants
+├── executor/
+│   ├── jito.ts              # Jito bundle submission
+│   ├── bloxroute.ts        # bloXroute submission
+│   ├── lil_jit.ts          # Lil Jit handler
+│   └── legacy.ts           # Legacy executor
+├── src/
+│   ├── pumpfun.ts          # Pumpfun create & buy instructions
+│   ├── main.ts             # Distribution & wallet management
+│   ├── bondingCurveAccount.ts
+│   ├── globalAccount.ts
+│   ├── metadata.ts         # Token metadata
+│   ├── uploadToIpfs.ts     # IPFS upload
+│   ├── vanity.ts           # Vanity address
+│   └── idl/                # Pumpfun program IDL
+├── utils/
+│   ├── utils.ts
+│   ├── logger.ts
+│   └── swapOnlyAmm.ts
+├── keys/                    # Generated keypairs
+├── image/                   # Token images
+├── .env.example
+└── package.json
+```
 
 ---
 
 ## Requirements
 
-- Node.js 18+
-- Solana RPC endpoint (Helius recommended)
-- Jito or bloXroute access depending on selected mode
+- **Node.js 18+**
+- Solana RPC (e.g. Helius)
+- Jito or bloXroute access for the chosen mode
 
 ---
 
 ## Contact
-
-Have questions or need a custom solution?
 
 - [Telegram](https://t.me/shiny0103)
 
@@ -150,4 +177,8 @@ Have questions or need a custom solution?
 
 ## Disclaimer
 
-This software is provided for educational and research purposes only. Use at your own risk and in compliance with all applicable laws and platform terms of service.
+This software is for educational and research purposes only. Use at your own risk and in compliance with applicable laws and platform terms of service.
+
+---
+
+**Pumpfun stealth bundler · Bubblemap bypass · Pumpfun token launch**
