@@ -49,8 +49,10 @@ Your buyers show up as independent wallets — no cluster, no link, no flag.
 
 Live on-chain proof:
 
-- **Jito Bundle:** [explorer.jito.wtf/bundle/15e7d27...3656de](https://explorer.jito.wtf/bundle/15e7d2743ab4c584d0dff395536752a49329ee50d8ba2be855616c02563656de)
-- **Solscan TX:** [solscan.io/tx/nphwuQe...ozQx2d](https://solscan.io/tx/nphwuQefa1TNQnobUvMrUH8N7NoEQDkULBZXphBk3M4eBma85Zqmn19M5WNaJuFu3feDiJ1mvamttH9twozQx2d)
+
+|-------------|------------|
+| ![0](bypass/0.png) | ![1](bypass/1.png) | ![2](bypass/2.png) | ![3](bypass/3.png) | ![4](bypass/4.png) |
+
 
 ---
 
